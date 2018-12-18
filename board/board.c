@@ -217,7 +217,8 @@ uint8_t BOARD_GetBatteryLevel(void)
                                           adcConvResult);
 
     /* Return battery level percentage. Note that fresult represents half of VCC so it has to be multiplied by 4 */
-    return (uint8_t)((fresult*4*100)/ADC_BATTERY_FULL_VOLTAGE);
+    return 6;
+    //return (uint8_t)((fresult*4*100)/ADC_BATTERY_FULL_VOLTAGE);
 }
 
 void BOARD_InitAdc(void)
@@ -497,6 +498,22 @@ void hardware_init(void)
     RCO32K_InitSwCalib(RCO32K_CALIBRATION_INTERVAL);         /* Enable periodic 32k RCO calibration */
 #endif
 }
+//debug adc
+
+status_t BOARD_InitDebugConsole(void)
+{
+    status_t result;
+
+    /* update Flexcomm fractional divider to correct the baud rate */
+    CLOCK_SetFRGClock(BOARD_DEBUG_UART_BASEADDR == (uint32_t)USART0 ? kCLOCK_DivFrg0 : kCLOCK_DivFrg1,
+                      FLEXCOMM_CLK(BOARD_DEBUG_UART_CLK_FREQ, BOARD_DEBUG_UART_BAUDRATE));
+
+    result = DbgConsole_Init(BOARD_DEBUG_UART_BASEADDR, BOARD_DEBUG_UART_BAUDRATE, DEBUG_CONSOLE_DEVICE_TYPE_FLEXCOMM,
+                             BOARD_DEBUG_UART_CLK_FREQ);
+    assert(kStatus_Success == result);
+    return result;
+}
+
 /*******************************************************************************
  * EOF
  ******************************************************************************/

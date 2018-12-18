@@ -669,5 +669,24 @@ static inline void ADC_PgaChopperEnable(ADC_Type *base, bool enable)
 /*!
  * @}
  */
+//debug 2018.12.11 2:02 PM adc
+static inline void ADC_Enabletest(ADC_Type *base, bool enable)
+{
+    volatile uint32_t delayX;
+
+    if (enable)
+    {
+        base->CTRL |= ADC_CTRL_ENABLE_MASK;
+    }
+    else
+    {
+        base->CTRL &= ~ADC_CTRL_ENABLE_MASK;
+    }
+
+    /* Note: ADC need one cycle to get ready before triggered */
+    for (delayX = 0; delayX < 256; delayX++)
+    {
+    }
+}
 
 #endif /* _FSL_ADC_H_ */

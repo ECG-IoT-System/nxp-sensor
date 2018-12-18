@@ -62,6 +62,8 @@
 #define gBleSig_CharPresFormatDescriptor_d      0x2904
 /*! Valid Range Descriptor declaration UUID */
 #define gBleSig_ValidRangeDescriptor_d          0x2906
+/*debug 2018.12.10 Characteristic User Description*/
+#define gBleSig_CharUserDescriptor_d            0x2901
 
 
 /*! GAP Service UUID */
@@ -116,6 +118,14 @@
 #define gBleSig_WPTService_d                    0xFFFE
 /*! BTP Service UUID */
 #define gBleSig_BtpService_d                    0xFEAF
+
+//debug 2018.12.12 4:30AM service
+#define uuid_service_qpps_test                  0xFFF0
+#define readtime                                0xFFF1
+#define writetime                               0xFFF2
+#define reqdata                                 0xFFF3
+#define ecgdata                                 0xFFF4
+
 
 /*! GAP Device Name Characteristic UUID */
 #define gBleSig_GapDeviceName_d                 0x2A00

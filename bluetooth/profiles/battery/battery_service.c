@@ -148,7 +148,7 @@ bleResult_t Bas_RecordBatteryMeasurement (basConfig_t* pServiceConfig)
     if (result != gBleSuccess_c)
         return result;
 
-    Bas_SendNotifications(pServiceConfig, handle);
+    //Bas_SendNotifications(pServiceConfig, handle);
 
     return gBleSuccess_c;
 }

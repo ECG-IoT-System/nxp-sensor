@@ -304,7 +304,7 @@ bleResult_t GattServer_SendInstantValueNotification
     deviceId_t              deviceId,
     uint16_t                handle,
     uint16_t                valueLength,
-    uint8_t*                aValue
+    uint16_t*                aValue
 );
 
 /*! *********************************************************************************

@@ -60,12 +60,19 @@
 typedef struct qppsConfig_tag
 {
     uint16_t    serviceHandle;
+    uint8_t     valueone ;  //debug 2018.12.5 2:00PM  read value
+    uint8_t     valuetwo ;  //debug 2018.12.10 7:42PM read second value
+    bool_t*     aValidSubscriberList;//debug 2018.12.9 8:57PM
+    uint8_t     validSubscriberListSize;//debug 2018.12.9 8:57PM
+
+
 } qppsConfig_t;
 
 
 typedef struct tmcConfig_tag
 {
     uint16_t    hService;
+    uint16_t    hnxData; //debug 2018.12.4 for new GATT
     uint16_t    hTxData;
     uint16_t    hTxCccd; 
     uint16_t    hRxData;
@@ -133,14 +140,36 @@ bleResult_t Qpp_Unsubscribe(void);
 *
 * \return       gBleSuccess_c or error.
 ************************************************************************************/
-bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle, uint16_t length, uint8_t *testData);
+bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle, uint16_t length, uint8_t *testData,  uint8_t *testData2,uint8_t *testData3);
 
 #ifdef __cplusplus
 }
 #endif 
 
-#endif /* _PRIVATE_PROFILE_INTERFACE_H_ */
+//debug 2018.12.7  4:25PM  declare for another notify
+bleResult_t Qpp_SendData2 (uint8_t deviceId, uint16_t serviceHandle, uint16_t length, uint8_t *testData);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 /*! *********************************************************************************
 * @}
 ********************************************************************************** */
+
+bleResult_t readdataMeasurement (qppsConfig_t* pServiceConfig);//debug 2018.12.7 5:06PM declare read function
+
+#ifdef __cplusplus
+}
+#endif
+
+//debug 2018.12.10 7:47PM declare read data
+bleResult_t readEcgReqMeasurement (qppsConfig_t* pServiceConfig);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _PRIVATE_PROFILE_INTERFACE_H_ */

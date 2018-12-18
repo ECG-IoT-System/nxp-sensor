@@ -182,13 +182,23 @@ extern "C" {
 *************************************************************************************
 ************************************************************************************/
 
+//status_t BOARD_InitDebugConsole(void);
+//debug adc
 status_t BOARD_InitDebugConsole(void);
+
+#if defined(__cplusplus)
+}
+#endif /* __cplusplus */
+
+
+
 /* Function to initialize ADC on board configuration. */
 void BOARD_InitAdc(void);
 /* Function to read battery level on board configuration. */
 uint8_t BOARD_GetBatteryLevel(void);
 void BOARD_InitButtons(void);
 void BOARD_InitLEDs(void);
+
 
 /* Function called by the BLE connection manager to generate PER MCU keys */
 extern void BOARD_GetMCUUid(uint8_t* aOutUid16B, uint8_t* pOutLen);

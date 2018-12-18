@@ -257,6 +257,7 @@
 #define gGapDefaultMinConnectionInterval_d  0x0050
 /*! Default maximum connection interval: 200ms */
 #define gGapDefaultMaxConnectionInterval_d  0x00A0
+//#define gGapDefaultMaxConnectionInterval_d  0x9000
 
 /*! The default value for the Connection Request Parameters structure */
 #define gGapDefaultConnectionRequestParameters_d \
@@ -636,14 +637,14 @@ typedef enum gapControllerTestCmd_tag
 /*! Enumeration for Controller Transmitter Test payload types. */
 typedef enum gapControllerTestTxType_tag
 {
-    gControllerTestTxPrbs9_c,   /*!< PRBS9 sequence ‘11111111100000111101…’ */
-    gControllerTestTxF0_c,      /*!< Repeated ‘11110000’ */
-    gControllerTestTxAA_c,      /*!< Repeated ‘10101010’ */
+    gControllerTestTxPrbs9_c,   /*!< PRBS9 sequence ï¿½11111111100000111101ï¿½ï¿½ */
+    gControllerTestTxF0_c,      /*!< Repeated ï¿½11110000ï¿½ */
+    gControllerTestTxAA_c,      /*!< Repeated ï¿½10101010ï¿½ */
     gControllerTestTxPrbs15_c,  /*!< PRBS15 sequence */
-    gControllerTestTxFF_c,      /*!< Repeated ‘11111111’ */
-    gControllerTestTx00_c,      /*!< Repeated ‘00000000’ */
-    gControllerTestTx0F_c,      /*!< Repeated ‘00001111’ */
-    gControllerTestTx55_c,      /*!< Repeated ‘01010101’ */
+    gControllerTestTxFF_c,      /*!< Repeated ï¿½11111111ï¿½ */
+    gControllerTestTx00_c,      /*!< Repeated ï¿½00000000ï¿½ */
+    gControllerTestTx0F_c,      /*!< Repeated ï¿½00001111ï¿½ */
+    gControllerTestTx55_c,      /*!< Repeated ï¿½01010101ï¿½ */
 } gapControllerTestTxType_t;    /*!<  */
 
 /*

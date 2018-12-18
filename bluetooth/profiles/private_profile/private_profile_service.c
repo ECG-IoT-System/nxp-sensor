@@ -46,6 +46,8 @@
 #include "private_profile_interface.h"
 #include "SerialManager.h"
 #include "gatt_db_handles.h"
+
+
 /************************************************************************************
 *************************************************************************************
 * Private constants & macros
@@ -75,6 +77,19 @@ deviceId_t mQpp_SubscribedClientId;
 
 bleResult_t Qpp_Start (qppsConfig_t *pServiceConfig)
 {
+	//debug 2018.12.10 4:59PM for readdata so rewrite it
+	//
+	/* reset all slots for valid subscribers */
+	    //for(mClientId = 0; mClientId < pServiceConfig->validSubscriberListSize; mClientId++)
+	    //{
+	    //    pServiceConfig->aValidSubscriberList[mClientId] = FALSE;
+	   // }
+
+	    /* Record initial battery level measurement */
+		readdataMeasurement(pServiceConfig);
+		readEcgReqMeasurement(pServiceConfig);
+	    //
+
 
     return gBleSuccess_c;
 }
@@ -97,27 +112,132 @@ bleResult_t Qpp_Unsubscribe()
     return gBleSuccess_c;
 }
 
-bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t length, uint8_t *testData)
+bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t length, uint8_t *testData, uint8_t *testData2,uint8_t *testData3 )
 {
     uint16_t  handle;
     bleResult_t result;
     uint16_t  handleCccd;
+    //uint16_t  handleCccd2;//debug
     bool_t isNotifActive;
-    
-    bleUuid_t uuid;
-    FLib_MemCpy(uuid.uuid128, uuid_qpps_characteristics_tx, 16);
+    //uint16_t  handle2; //debug 2018.12.4 9:52PM set another handle
+    length=length;
+
+    bleUuid_t uuid=Uuid16(ecgdata);
+
+    //FLib_MemCpy(uuid.uuid16, writetime, 16);
 
     /* Get handle of  characteristic */
-    result = GattDb_FindCharValueHandleInService(serviceHandle, gBleUuidType128_c, &uuid, &handle);    
+    result = GattDb_FindCharValueHandleInService(serviceHandle, gBleUuidType16_c, &uuid, &handle);
     if (result != gBleSuccess_c)
         return result;
+    /* Get handle of CCCD */
+        if ((result = GattDb_FindCccdHandleForCharValueHandle(handle, &handleCccd)) != gBleSuccess_c)
+            return result;
+
+
+        result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
+            if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
+                result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData);
+            	result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData2);
+            	result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData3);
+
+
+    //debug 2018.12.4 9:41PM get another handle
+    //FLib_MemCpy(uuid.uuid128, uuid_qpps_characteristics_nx, 16);
+    //result = GattDb_FindCharValueHandleInService(serviceHandle, gBleUuidType128_c, &uuid, &handle2);
+       // if (result != gBleSuccess_c)
+          //  return result;
         /* Get handle of CCCD */
-    if ((result = GattDb_FindCccdHandleForCharValueHandle(handle, &handleCccd)) != gBleSuccess_c)
-        return result;
+   // if ((result = GattDb_FindCccdHandleForCharValueHandle(handle2, &handleCccd2)) != gBleSuccess_c)
+      //  return result;
 	
-    result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
-    if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
-        result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData); 
+     // if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
+       // result = GattServer_SendInstantValueNotification(deviceId, handle2, length, testData); //debug 2018.12.4 9:43PM send another notify
     
     return result;
 }
+
+//debug 2018.12.7 send another notify
+bleResult_t Qpp_SendData2 (uint8_t deviceId, uint16_t serviceHandle,uint16_t length, uint8_t *testData)
+{
+    uint16_t  handle;
+    bleResult_t result;
+    uint16_t  handleCccd;
+   // uint16_t  handleCccd2;//debug
+    bool_t isNotifActive;
+   // uint16_t  handle2; //debug 2018.12.4 9:52PM set another handle
+
+
+    bleUuid_t uuid=Uuid16(writetime);
+
+    //FLib_MemCpy(uuid.uuid16, ecgdata, 16);
+
+    /* Get handle of  characteristic */
+    result = GattDb_FindCharValueHandleInService(serviceHandle, gBleUuidType16_c, &uuid, &handle);
+    if (result != gBleSuccess_c)
+        return result;
+    /* Get handle of CCCD */
+        if ((result = GattDb_FindCccdHandleForCharValueHandle(handle, &handleCccd)) != gBleSuccess_c)
+            return result;
+
+        result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
+            if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
+                result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData);
+
+    return result;
+}
+//debug 2018.12.7 5:05PM read data update
+bleResult_t readdataMeasurement (qppsConfig_t* pServiceConfig)
+{
+    uint16_t  handle;
+    bleResult_t result;
+    bleUuid_t uuid;
+    //bleUuid_t uuid = Uuid16(gBleSig_BatteryLevel_d);
+
+    FLib_MemCpy(uuid.uuid128, readtime, 16);
+
+    /* Get handle of  characteristic */
+    //result = GattDb_FindCharValueHandleInService(pServiceConfig->serviceHandle,gBleUuidType16_c, &uuid, &handle);
+     result = GattDb_FindCharValueHandleInService(pServiceConfig->serviceHandle, gBleUuidType128_c, &uuid, &handle);
+
+    if (result != gBleSuccess_c)
+        return result;
+
+    /* Update characteristic value and send notification */
+    result = GattDb_WriteAttribute(handle, sizeof(uint8_t), &pServiceConfig->valueone);
+
+    if (result != gBleSuccess_c)
+        return result;
+
+    //Bas_SendNotifications(pServiceConfig, handle);
+
+    return gBleSuccess_c;
+}
+//debug 2018.12.10 7:48 PM ECG Request data_read
+bleResult_t readEcgReqMeasurement (qppsConfig_t* pServiceConfig)
+{
+    uint16_t  handle;
+    bleResult_t result;
+    bleUuid_t uuid;
+    //bleUuid_t uuid = Uuid16(gBleSig_BatteryLevel_d);
+
+    FLib_MemCpy(uuid.uuid128, reqdata, 16);
+
+    /* Get handle of  characteristic */
+    //result = GattDb_FindCharValueHandleInService(pServiceConfig->serviceHandle,gBleUuidType16_c, &uuid, &handle);
+     result = GattDb_FindCharValueHandleInService(pServiceConfig->serviceHandle, gBleUuidType128_c, &uuid, &handle);
+
+    if (result != gBleSuccess_c)
+        return result;
+
+    /* Update characteristic value and send notification */
+    result = GattDb_WriteAttribute(handle, sizeof(uint8_t), &pServiceConfig->valuetwo);
+
+    if (result != gBleSuccess_c)
+        return result;
+
+    //Bas_SendNotifications(pServiceConfig, handle);
+
+    return gBleSuccess_c;
+}
+
