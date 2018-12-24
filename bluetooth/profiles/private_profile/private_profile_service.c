@@ -112,7 +112,7 @@ bleResult_t Qpp_Unsubscribe()
     return gBleSuccess_c;
 }
 
-bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t length, uint8_t *testData, uint8_t *testData2,uint8_t *testData3 )
+bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t length, uint8_t *testData )
 {
     uint16_t  handle;
     bleResult_t result;
@@ -120,7 +120,7 @@ bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t leng
     //uint16_t  handleCccd2;//debug
     bool_t isNotifActive;
     //uint16_t  handle2; //debug 2018.12.4 9:52PM set another handle
-    length=length;
+
 
     bleUuid_t uuid=Uuid16(ecgdata);
 
@@ -138,8 +138,8 @@ bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle,uint16_t leng
         result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
             if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
                 result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData);
-            	result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData2);
-            	result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData3);
+            	//result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData2);
+            	//result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData3);
 
 
     //debug 2018.12.4 9:41PM get another handle
@@ -180,9 +180,9 @@ bleResult_t Qpp_SendData2 (uint8_t deviceId, uint16_t serviceHandle,uint16_t len
         if ((result = GattDb_FindCccdHandleForCharValueHandle(handle, &handleCccd)) != gBleSuccess_c)
             return result;
 
-        result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
-            if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
-                result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData);
+        //result = Gap_CheckNotificationStatus(deviceId, handleCccd, &isNotifActive);
+          //  if ((gBleSuccess_c == result) && (TRUE == isNotifActive))
+            //    result = GattServer_SendInstantValueNotification(deviceId, handle, length, testData);
 
     return result;
 }

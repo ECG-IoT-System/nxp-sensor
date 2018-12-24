@@ -140,7 +140,7 @@ bleResult_t Qpp_Unsubscribe(void);
 *
 * \return       gBleSuccess_c or error.
 ************************************************************************************/
-bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle, uint16_t length, uint8_t *testData,  uint8_t *testData2,uint8_t *testData3);
+bleResult_t Qpp_SendData (uint8_t deviceId, uint16_t serviceHandle, uint16_t length, uint8_t *testData);
 
 #ifdef __cplusplus
 }

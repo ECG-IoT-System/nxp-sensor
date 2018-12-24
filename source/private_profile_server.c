@@ -151,6 +151,12 @@ static tmrTimerID_t mAdvTimerId;
 static tmrTimerID_t mBatteryMeasurementTimerId;
 static tmrTimerID_t mQppsThroughputStatisticsTimerId;
 static tmrTimerID_t mQppsTxTimerId;
+//debug
+static tmrTimerID_t mQppsTxTimerId2;
+static tmrTimerID_t mQppsTxTimerId3;
+static tmrTimerID_t mQppsTxTimerId4;
+static tmrTimerID_t mQppsTxTimerId5;
+static tmrTimerID_t mQppsTxTimerId6;
 static appPeerInfo_t mPeerInformation[gAppMaxConnections_c];
 static uint8_t printBuffer[100];
 
@@ -173,16 +179,20 @@ static void BatteryMeasurementTimerCallback (void *);
 static void QppsThoughputStatisticsTimerCallback(void* pParam);
 static void QppsTxTimerCallback(void* pParam);
 static void QppsTxTimerCallback2(void* pParam);//debug
-static void readdataTimerCallback (void *);//debug 2018.12.7 5:29PM declare readdata function
+static void QppsTxTimerCallback3(void* pParam);
+static void QppsTxTimerCallback4(void* pParam);
+static void QppsTxTimerCallback5(void* pParam);
+static void QppsTxTimerCallback6(void* pParam);
+//static void readdataTimerCallback (void *);//debug 2018.12.7 5:29PM declare readdata function
 
 static void BleApp_Advertise(void);
 
-static void BleApp_ReceivedDataHandler
-(
-    deviceId_t  deviceId,
-    uint8_t*    aValue,
-    uint16_t    valueLength
-);
+//static void BleApp_ReceivedDataHandler
+//(
+  //  deviceId_t  deviceId,
+  //  uint8_t*    aValue,
+  //  uint16_t    valueLength
+//);
 
 static void TxPrintCallback(void* pParam);
 
@@ -337,6 +347,12 @@ static void BleApp_Config()
     mBatteryMeasurementTimerId = TMR_AllocateTimer();
     mQppsThroughputStatisticsTimerId = TMR_AllocateTimer();
     mQppsTxTimerId =  TMR_AllocateTimer();
+    //debug
+    mQppsTxTimerId2 =  TMR_AllocateTimer();
+    mQppsTxTimerId3 =  TMR_AllocateTimer();
+    mQppsTxTimerId4 =  TMR_AllocateTimer();
+    mQppsTxTimerId5 =  TMR_AllocateTimer();
+    mQppsTxTimerId6 =  TMR_AllocateTimer();
 }
 
 /*! *********************************************************************************
@@ -475,7 +491,36 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
             {
 		TMR_StartLowPowerTimer(mQppsTxTimerId, gTmrLowPowerIntervalMillisTimer_c,
                            mQppsTxInterval_c, QppsTxTimerCallback, NULL);   
+
+
             }
+            //debug add value in notify
+            if(!TMR_IsTimerActive(mQppsTxTimerId2))
+                        {
+            TMR_StartLowPowerTimer(mQppsTxTimerId2, gTmrLowPowerIntervalMillisTimer_c,
+            		                           mQppsTxInterval_c, QppsTxTimerCallback2, NULL);
+                        }
+            if(!TMR_IsTimerActive(mQppsTxTimerId3))
+                                   {
+                       TMR_StartLowPowerTimer(mQppsTxTimerId3, gTmrLowPowerIntervalMillisTimer_c,
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback5, NULL);
+                                   }
+            if(!TMR_IsTimerActive(mQppsTxTimerId4))
+                                   {
+                       TMR_StartLowPowerTimer(mQppsTxTimerId4, gTmrLowPowerIntervalMillisTimer_c,
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback6, NULL);
+
+                                  }
+            //if(!TMR_IsTimerActive(mQppsTxTimerId5))
+              //                     {
+                //       TMR_StartLowPowerTimer(mQppsTxTimerId5, gTmrLowPowerIntervalMillisTimer_c,
+                  //     		                           mQppsTxInterval_c, QppsTxTimerCallback5, NULL);
+                    //               }
+           // if(!TMR_IsTimerActive(mQppsTxTimerId6))
+             //                      {
+               //        TMR_StartLowPowerTimer(mQppsTxTimerId6, gTmrLowPowerIntervalMillisTimer_c,
+                 //      		                           mQppsTxInterval_c, QppsTxTimerCallback6, NULL);
+                   //                }
         }
         break;
         
@@ -498,7 +543,13 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
                 {
                     TMR_StopTimer(mBatteryMeasurementTimerId);      
                     TMR_StopTimer(mQppsThroughputStatisticsTimerId);
-                    TMR_StopTimer(mQppsTxTimerId);   
+                    TMR_StopTimer(mQppsTxTimerId);
+                    //debug
+                    TMR_StopTimer(mQppsTxTimerId2);
+                    TMR_StopTimer(mQppsTxTimerId3);
+                    TMR_StopTimer(mQppsTxTimerId4);
+                    TMR_StopTimer(mQppsTxTimerId5);
+                    TMR_StopTimer(mQppsTxTimerId6);
                 }
             }
 
@@ -541,8 +592,8 @@ static void BleApp_GattServerCallback (deviceId_t deviceId, gattServerEvent_t* p
         }
         break;
        // case gEvtAttributeRead_c:
-         //      {
-           //        handle = pServerEvent->eventData.attributeReadEvent.handle;
+            //   {
+            //       handle = pServerEvent->eventData.attributeReadEvent.handle;
              //      status = gAttErrCodeNoError_c;
                   // GattServer_SendAttributeWrittenStatus(deviceId, handle, status);
              //      BleApp_ReceivedDataHandler(deviceId, pServerEvent->eventData.attributeReadEvent.aValue, pServerEvent->eventData.attributeReadEvent.cValueLength);
@@ -562,12 +613,12 @@ static void BleApp_GattServerCallback (deviceId_t deviceId, gattServerEvent_t* p
 
         case gEvtAttributeWrittenWithoutResponse_c:
         {
-            handle = pServerEvent->eventData.attributeWrittenEvent.handle;
+         //   handle = pServerEvent->eventData.attributeWrittenEvent.handle;
             
-           // if (handle == value_qpps_rx)
-            //{
-             //   BleApp_ReceivedDataHandler(deviceId, pServerEvent->eventData.attributeWrittenEvent.aValue, pServerEvent->eventData.attributeWrittenEvent.cValueLength);
-           // }
+          //  if (handle == value_qpps_rx)
+         //  {
+         //       BleApp_ReceivedDataHandler(deviceId, pServerEvent->eventData.attributeWrittenEvent.aValue, pServerEvent->eventData.attributeWrittenEvent.cValueLength);
+          //  }
         }
         break;
         
@@ -592,15 +643,15 @@ static void BleApp_GattServerCallback (deviceId_t deviceId, gattServerEvent_t* p
 }
 
 
-static void BleApp_ReceivedDataHandler
-(
-    deviceId_t deviceId,
-    uint8_t*    aValue,
-    uint16_t    valueLength
-)
-{
-    mPeerInformation[deviceId].bytsReceivedPerInterval = mPeerInformation[deviceId].bytsReceivedPerInterval + valueLength;
-}
+//static void BleApp_ReceivedDataHandler
+//(
+  //  deviceId_t deviceId,
+    //uint8_t*    aValue,
+    //uint16_t    valueLength
+//)
+//{
+  //  mPeerInformation[deviceId].bytsReceivedPerInterval = mPeerInformation[deviceId].bytsReceivedPerInterval + valueLength;
+//}
 
 
 /*! *********************************************************************************
@@ -643,39 +694,40 @@ static void AdvertisingTimerCallback(void * pParam)
 *
 * \param[in]    pParam        Callback parameters.
 ********************************************************************************** */
+
 //debug-> put notify data
 static void QppsTxTimerCallback(void * pParam)
 {
-      static uint8_t index = 0;
-      uint8_t i;
-      uint8_t length = mQppsTestDataLength + 8;
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
 
 
       uint8_t tx_data[length];//package1
-      uint8_t tx_datat2[length];//package2
-      uint8_t tx_datat3[length];//package3
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
 
-      uint8_t tx_data2;
-      uint8_t *testtry;
-      uint8_t test[2];
+      //uint8_t tx_data2;
+
       bleResult_t result;
 
-      uint8_t * adc_data;
-      adc_data = adc_conv();
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
 
-      for(i = 0; i<8; i++)
+     for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  tx_datat2[i]=0;
-		  tx_datat3[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
       }
+
 
       for(i = 8; i<length; i++)
       {
-    	  //tx_data[i] = 1;
-    	  tx_data[i] = adc_data[i-8];//package1
-    	  tx_datat2[i] = adc_data[i+length-16];//package2
-		  tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  tx_data[i] = 1;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
 
       }
 
@@ -684,7 +736,7 @@ static void QppsTxTimerCallback(void * pParam)
       {
           if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
           {
-              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data, tx_datat2,tx_datat3);//debug 2018.12.5 read value
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
               if(result == gBleSuccess_c)
                   mPeerInformation[i].bytsSentPerInterval += length;
           }
@@ -693,18 +745,258 @@ static void QppsTxTimerCallback(void * pParam)
 
       //debug 2018.12.7 4:21PM send another notify
       //get ECG req
-      tx_data2=0x05;
+      //tx_data2=0x05;
 
-      for (i = 0; i < gAppMaxConnections_c; i++)
-            {
-                if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
-                {
+      //for (i = 0; i < gAppMaxConnections_c; i++)
+        //    {
+          //      if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+            //    {
                     //result = Qpp_SendData2(mPeerInformation[i].deviceId, service_qpps, 2, tx_data2);
                     //if(result == gBleSuccess_c)
                         //mPeerInformation[i].bytsSentPerInterval += length;
-                }
-            }
-            index++;
+              //  }
+           // }
+           // index++;
+
+}
+static void QppsTxTimerCallback2(void * pParam)
+{
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
+
+
+      uint8_t tx_data[length];//package1
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
+
+      //uint8_t tx_data2;
+
+      bleResult_t result;
+
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
+
+     for(i = 0; i<8; i++)
+      {
+    	  tx_data[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
+      }
+
+
+      for(i = 8; i<length; i++)
+      {
+    	  tx_data[i] = 2;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+      }
+
+
+      for (i = 0; i < gAppMaxConnections_c; i++)
+      {
+          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+          {
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
+              if(result == gBleSuccess_c)
+                  mPeerInformation[i].bytsSentPerInterval += length;
+          }
+      }
+      index++;
+
+}
+static void QppsTxTimerCallback3(void * pParam)
+{
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
+
+
+      uint8_t tx_data[length];//package1
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
+
+      //uint8_t tx_data2;
+
+      bleResult_t result;
+
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
+
+     for(i = 0; i<8; i++)
+      {
+    	  tx_data[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
+      }
+
+
+      for(i = 8; i<length; i++)
+      {
+    	  tx_data[i] = 3;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+      }
+
+
+      for (i = 0; i < gAppMaxConnections_c; i++)
+      {
+          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+          {
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
+              if(result == gBleSuccess_c)
+                  mPeerInformation[i].bytsSentPerInterval += length;
+          }
+      }
+      index++;
+
+}
+static void QppsTxTimerCallback4(void * pParam)
+{
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
+
+
+      uint8_t tx_data[length];//package1
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
+
+      //uint8_t tx_data2;
+
+      bleResult_t result;
+
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
+
+     for(i = 0; i<8; i++)
+      {
+    	  tx_data[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
+      }
+
+
+      for(i = 8; i<length; i++)
+      {
+    	  tx_data[i] = 4;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+      }
+
+
+      for (i = 0; i < gAppMaxConnections_c; i++)
+      {
+          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+          {
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
+              if(result == gBleSuccess_c)
+                  mPeerInformation[i].bytsSentPerInterval += length;
+          }
+      }
+      index++;
+
+}
+static void QppsTxTimerCallback5(void * pParam)
+{
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
+
+
+      uint8_t tx_data[length];//package1
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
+
+      //uint8_t tx_data2;
+
+      bleResult_t result;
+
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
+
+     for(i = 0; i<8; i++)
+      {
+    	  tx_data[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
+      }
+
+
+      for(i = 8; i<length; i++)
+      {
+    	  tx_data[i] = 5;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+      }
+
+
+      for (i = 0; i < gAppMaxConnections_c; i++)
+      {
+          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+          {
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
+              if(result == gBleSuccess_c)
+                  mPeerInformation[i].bytsSentPerInterval += length;
+          }
+      }
+      index++;
+
+}
+static void QppsTxTimerCallback6(void * pParam)
+{
+     static uint8_t index = 0;
+     uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
+
+
+      uint8_t tx_data[length];//package1
+      //uint8_t tx_datat2[length];//package2
+      //uint8_t tx_datat3[length];//package3
+
+      //uint8_t tx_data2;
+
+      bleResult_t result;
+
+      //uint8_t * adc_data;
+      //adc_data = adc_conv();
+
+     for(i = 0; i<8; i++)
+      {
+    	  tx_data[i]=0;
+    	  //tx_datat2[i]=0;
+		  //tx_datat3[i]=0;
+      }
+
+
+      for(i = 8; i<length; i++)
+      {
+    	  tx_data[i] = 6;
+    	  //tx_data[i] = adc_data[i-8];//package1
+    	  //tx_datat2[i] = adc_data[i+length-16];//package2
+		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+      }
+
+
+      for (i = 0; i < gAppMaxConnections_c; i++)
+      {
+          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
+          {
+              result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data);//debug 2018.12.5 read value
+              if(result == gBleSuccess_c)
+                  mPeerInformation[i].bytsSentPerInterval += length;
+          }
+      }
+      index++;
 
 }
 
@@ -716,7 +1008,7 @@ static void QppsTxTimerCallback(void * pParam)
 * \param[in]    pParam        Calback parameters.
 ********************************************************************************** */
 
-//debug send in different intervel (test)
+
 static void QppsThoughputStatisticsTimerCallback(void* pParam)
 {
     uint8_t i;
@@ -737,57 +1029,7 @@ static void QppsThoughputStatisticsTimerCallback(void* pParam)
 
 }
 
-//test
-static void QppsTxTimerCallback2(void * pParam)
-{
-      static uint8_t index = 0;
-      uint8_t i;
-      uint8_t length = mQppsTestDataLength;
-      length=60;
-      uint8_t tx_data[length];
-      uint8_t tx_datat2[length];
-      uint8_t tx_datat3[length];
-      //uint8_t tx_data[mQppsTestDataLength];
-      //uint8_t tx_datat2[mQppsTestDataLength];
-      //uint8_t tx_datat3[mQppsTestDataLength];
-      uint8_t tx_data2;
-      uint8_t *testtry;
-      uint8_t test[2];
-      bleResult_t result;
-      //get ECG data
 
-      //for(i = 0; i<length; i++)
-      //{
-        //  tx_data[i] = Getadc();//debug2 i->3 2018.12.3
-      //}
-      //tx_data[0] = index;
-
-      uint8_t * adc_data;
-      adc_data = adc_conv();
-
-      for(i = 0; i<length; i++)
-            {
-    	  	  tx_data[i] = 2;
-            }
-      for(i = 0; i<length; i++)
-             {
-    	  	  tx_datat2[i] = 3;
-             }
-      for(i = 0; i<length; i++)
-              {
-         	   tx_datat3[i] = 4;
-              }
-
-      for (i = 0; i < gAppMaxConnections_c; i++)
-      {
-          if((mPeerInformation[i].deviceId != gInvalidDeviceId_c)&&(mPeerInformation[i].ntf_cfg == QPPS_VALUE_NTF_ON))
-          {
-             // result = Qpp_SendData(mPeerInformation[i].deviceId, service_qpps, length, tx_data2);//debug 2018.12.5 read value
-              //if(result == gBleSuccess_c)
-                  //mPeerInformation[i].bytsSentPerInterval += length;
-          }
-      }
-}
 
 static void TxPrintCallback(void * pParam)
 {
@@ -811,7 +1053,7 @@ static void TxPrintCallback(void * pParam)
 static void BatteryMeasurementTimerCallback(void * pParam)
 {
 	basServiceConfig.batteryLevel = 4;
-	//basServiceConfig.batteryLevel = BOARD_GetBatteryLevel();
+	basServiceConfig.batteryLevel = BOARD_GetBatteryLevel();
     Bas_RecordBatteryMeasurement(&basServiceConfig);
 }
 

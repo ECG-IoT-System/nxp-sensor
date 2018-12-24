@@ -23,7 +23,7 @@ PRIMARY_SERVICE(service_qpps, uuid_service_qpps_test)
 			VALUE(value_reqdata, reqdata, (gPermissionFlagReadable_c), 2, 4)
 			DESCRIPTOR(test3, gBleSig_CharUserDescriptor_d, (gPermissionFlagReadable_c), 7, 0x04, 0x00, 0xAD, 0x27, 0x01, 0x01, 0x00)
 		CHARACTERISTIC(name_ecgdata, ecgdata, (gGattCharPropNotify_c) )
-			VALUE(value_ecgdata, ecgdata, (gPermissionFlagReadable_c),1,0x5A)
+			VALUE(value_ecgdata, ecgdata, (gPermissionFlagReadable_c),512,4)
 		CCCD(cccd_qpps_nx)
 			DESCRIPTOR(test4, gBleSig_CharUserDescriptor_d, (gPermissionFlagReadable_c), 7, 0x04, 0x00, 0xAD, 0x27, 0x01, 0x01, 0x00)
 
