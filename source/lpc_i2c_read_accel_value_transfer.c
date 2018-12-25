@@ -13,12 +13,16 @@ int main(void)
 	gdata = getGSensor(); // gsensor_array_uint8 [x_H][x_L][y_H][y_L][z_H][z_L]
 
 	PRINTF("G sensor test!\r\n");
-	PRINTF("x high byte = 0x%x\r\n", gdata[1]);
-	PRINTF("x low byte = 0x%x\r\n", gdata[2]);
-	PRINTF("y high byte = 0x%x\r\n", gdata[3]);
-	PRINTF("y low byte = 0x%x\r\n", gdata[4]);
-	PRINTF("z high byte = 0x%x\r\n", gdata[5]);
-	PRINTF("z low byte = 0x%x\r\n", gdata[6]);
+	int i;
+	for(i=0;i<3;++i){
+		PRINTF("G sensor data no. %d time\r\n",i);
+		PRINTF("x high byte = 0x%x\r\n", gdata[6*i]);
+		PRINTF("x low byte = 0x%x\r\n", gdata[6*i+1]);
+		PRINTF("y high byte = 0x%x\r\n", gdata[6*i+2]);
+		PRINTF("y low byte = 0x%x\r\n", gdata[6*i+3]);
+		PRINTF("z high byte = 0x%x\r\n", gdata[6*i+4]);
+		PRINTF("z low byte = 0x%x\r\n\n", gdata[6*i+5]);
+	}
 	//get uint8_t readBuff[7];
 	/* Transfer readBuff to G sensor value
 	 * status0_value = readBuff[0];

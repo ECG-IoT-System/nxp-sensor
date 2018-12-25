@@ -54,7 +54,7 @@
 /* FXOS8700 and MMA8451 have the same who_am_i register address. */
 #define ACCEL_WHOAMI_REG 0x0DU
 //#define ACCEL_READ_TIMES 10U
-#define ACCEL_READ_TIMES 1U
+#define ACCEL_READ_TIMES 3U
 
 /*******************************************************************************
  * Prototypes
