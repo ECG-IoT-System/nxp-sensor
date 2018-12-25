@@ -54,7 +54,7 @@
 /* FXOS8700 and MMA8451 have the same who_am_i register address. */
 #define ACCEL_WHOAMI_REG 0x0DU
 //#define ACCEL_READ_TIMES 10U
-#define ACCEL_READ_TIMES 10U
+#define ACCEL_READ_TIMES 1U
 
 /*******************************************************************************
  * Prototypes
@@ -69,7 +69,9 @@ static bool LPI2C_ReadAccelRegs(
  ******************************************************************************/
 
 /*  FXOS8700 and MMA8451 device address */
+// ECG Patch - MMA8452Q
 /* const uint8_t g_accel_address[] = {0x1CU, 0x1DU, 0x1EU, 0x1FU}; */
+// QN9080 DK - MMA8652Q
 const uint8_t g_accel_address[] = {0x1DU, 0x1EU, 0x1FU, 0x20U};
 
 i2c_master_handle_t g_m_handle;
@@ -272,7 +274,7 @@ static bool LPI2C_ReadAccelRegs(I2C_Type *base, uint8_t device_addr, uint8_t reg
 }
 
 //int main(void)
-int16_t * getGSensor(void)
+uint8_t * getGSensor(void)
 {
     bool isThereAccel = false;
     i2c_master_config_t masterConfig;
@@ -283,7 +285,8 @@ int16_t * getGSensor(void)
 
     static int16_t x, y , z;
     static int16_t gsensor_array[ACCEL_READ_TIMES*3];
-    //static int8_t gsensor_array_int8[ACCEL_READ_TIMES*3];
+    static uint8_t gsensor_array_uint8[ACCEL_READ_TIMES*3];
+    static uint8_t readBuff[7];
 
     BOARD_InitPins();
     BOARD_BootClockRUN();
@@ -314,7 +317,7 @@ int16_t * getGSensor(void)
     {
         uint8_t databyte = 0;
         uint8_t write_reg = 0;
-        uint8_t readBuff[7];
+        //static uint8_t readBuff[7];
         //int16_t x, y, z;
         uint8_t status0_value = 0;
         uint32_t i = 0U;
@@ -401,21 +404,24 @@ int16_t * getGSensor(void)
             gsensor_array[3*i + 2] = z;
 
 
+
             //x
-            //gsensor_array_int8[6*i] = x >> 8;
-            //gsensor_array_int8[6*i+1] = x;
+            gsensor_array_uint8[6*i] = x >> 8;
+            gsensor_array_uint8[6*i+1] = x;
             //y
-            //gsensor_array_int8[6*i+2] = y >> 8;
-            //gsensor_array_int8[6*i+3] = y;
+            gsensor_array_uint8[6*i+2] = y >> 8;
+            gsensor_array_uint8[6*i+3] = y;
             //z
-            //gsensor_array_int8[6*i+4] = z >> 8;
-            //gsensor_array_int8[6*i+5] = z;
+            gsensor_array_uint8[6*i+4] = z >> 8;
+            gsensor_array_uint8[6*i+5] = z;
 
 
         }
     }
 
-    return gsensor_array;
+    return gsensor_array_uint8;
+    //return gsensor_array;
+    //return readBuff;
     //while (1)
     //{
     //}

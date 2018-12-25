@@ -8,6 +8,6 @@
 #ifndef GETGENSOR_H_
 #define GETGENSOR_H_
 
-int16_t * getGSensor(void);
+uint8_t * getGSensor(void);
 
 #endif /* GETGENSOR_H_ */
