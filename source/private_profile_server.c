@@ -88,8 +88,9 @@
 ************************************************************************************/
 #define mBatteryLevelReportInterval_c                (10)         /* battery level report interval in seconds  */
 #define mQppsThroughputStatisticsInterval_c          (10000)       /* Throughput Statistics interval in miliseconds  */
-#define mQppsTxInterval_c                            (100)         /* Qpps send data interval in miliseconds  */
-#define mQppsTestDataLength                          (2*30)         /* the length of data that Qpps send every time*/
+#define mQppsTxInterval_c                            (166)         /* Qpps send data interval in miliseconds  */
+#define mQppsTestDataLength                          (100)/* the length of data that Qpps send every time*/
+#define gsensorDataLength                            (30)
 //debug1 20->120 2018.12.3 11:56PM
 /************************************************************************************
 *************************************************************************************
@@ -125,6 +126,7 @@ typedef struct appTxInfo_tag
 	uint32_t TxSpeed[gAppMaxConnections_c];
 }txInfo_t;
 
+
 /************************************************************************************
 *************************************************************************************
 * Private memory declarations
@@ -158,7 +160,12 @@ static tmrTimerID_t mQppsTxTimerId4;
 static tmrTimerID_t mQppsTxTimerId5;
 static tmrTimerID_t mQppsTxTimerId6;
 static appPeerInfo_t mPeerInformation[gAppMaxConnections_c];
+
+static uint8_t *adcbuffer;
+static uint8_t *gsensorbuffer;
+
 static uint8_t printBuffer[100];
+
 
 
 /************************************************************************************
@@ -344,8 +351,8 @@ static void BleApp_Config()
     Qpp_Start (&qppServiceConfig);
     /* Allocate application timers */
     mAdvTimerId = TMR_AllocateTimer();
-    mBatteryMeasurementTimerId = TMR_AllocateTimer();
-    mQppsThroughputStatisticsTimerId = TMR_AllocateTimer();
+    //mBatteryMeasurementTimerId = TMR_AllocateTimer();
+    //mQppsThroughputStatisticsTimerId = TMR_AllocateTimer();
     mQppsTxTimerId =  TMR_AllocateTimer();
     //debug
     mQppsTxTimerId2 =  TMR_AllocateTimer();
@@ -477,16 +484,17 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
             TMR_StopTimer(mAdvTimerId);
           
             /* Start battery measurements */
-            if(!TMR_IsTimerActive(mBatteryMeasurementTimerId))
-            {
-                TMR_StartLowPowerTimer(mBatteryMeasurementTimerId, gTmrLowPowerIntervalMillisTimer_c,
-                           TmrSeconds(mBatteryLevelReportInterval_c), BatteryMeasurementTimerCallback, NULL);
-            }
-            if(!TMR_IsTimerActive(mQppsThroughputStatisticsTimerId))
-            {
-                TMR_StartLowPowerTimer(mQppsThroughputStatisticsTimerId, gTmrLowPowerIntervalMillisTimer_c,
-                           mQppsThroughputStatisticsInterval_c, QppsThoughputStatisticsTimerCallback, NULL);   
-            }
+            adcbuffer = adc_conv();//debug get adc
+            //if(!TMR_IsTimerActive(mBatteryMeasurementTimerId))
+            //{
+              //  TMR_StartLowPowerTimer(mBatteryMeasurementTimerId, gTmrLowPowerIntervalMillisTimer_c,
+                //           TmrSeconds(mBatteryLevelReportInterval_c), BatteryMeasurementTimerCallback, NULL);
+            //}
+            //if(!TMR_IsTimerActive(mQppsThroughputStatisticsTimerId))
+            //{
+              //  TMR_StartLowPowerTimer(mQppsThroughputStatisticsTimerId, gTmrLowPowerIntervalMillisTimer_c,
+                //           mQppsThroughputStatisticsInterval_c, QppsThoughputStatisticsTimerCallback, NULL);
+           // }
             if(!TMR_IsTimerActive(mQppsTxTimerId))
             {
 		TMR_StartLowPowerTimer(mQppsTxTimerId, gTmrLowPowerIntervalMillisTimer_c,
@@ -503,24 +511,24 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
             if(!TMR_IsTimerActive(mQppsTxTimerId3))
                                    {
                        TMR_StartLowPowerTimer(mQppsTxTimerId3, gTmrLowPowerIntervalMillisTimer_c,
-                       		                           mQppsTxInterval_c, QppsTxTimerCallback5, NULL);
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback3, NULL);
                                    }
             if(!TMR_IsTimerActive(mQppsTxTimerId4))
                                    {
                        TMR_StartLowPowerTimer(mQppsTxTimerId4, gTmrLowPowerIntervalMillisTimer_c,
-                       		                           mQppsTxInterval_c, QppsTxTimerCallback6, NULL);
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback4, NULL);
 
                                   }
-            //if(!TMR_IsTimerActive(mQppsTxTimerId5))
-              //                     {
-                //       TMR_StartLowPowerTimer(mQppsTxTimerId5, gTmrLowPowerIntervalMillisTimer_c,
-                  //     		                           mQppsTxInterval_c, QppsTxTimerCallback5, NULL);
-                    //               }
-           // if(!TMR_IsTimerActive(mQppsTxTimerId6))
-             //                      {
-               //        TMR_StartLowPowerTimer(mQppsTxTimerId6, gTmrLowPowerIntervalMillisTimer_c,
-                 //      		                           mQppsTxInterval_c, QppsTxTimerCallback6, NULL);
-                   //                }
+            if(!TMR_IsTimerActive(mQppsTxTimerId5))
+                                   {
+                       TMR_StartLowPowerTimer(mQppsTxTimerId5, gTmrLowPowerIntervalMillisTimer_c,
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback5, NULL);
+                                   }
+            if(!TMR_IsTimerActive(mQppsTxTimerId6))
+                                   {
+                       TMR_StartLowPowerTimer(mQppsTxTimerId6, gTmrLowPowerIntervalMillisTimer_c,
+                       		                           mQppsTxInterval_c, QppsTxTimerCallback6, NULL);
+                                   }
         }
         break;
         
@@ -541,8 +549,8 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
                     break;
                 if(i==(gAppMaxConnections_c-1))
                 {
-                    TMR_StopTimer(mBatteryMeasurementTimerId);      
-                    TMR_StopTimer(mQppsThroughputStatisticsTimerId);
+                    //TMR_StopTimer(mBatteryMeasurementTimerId);
+                    //TMR_StopTimer(mQppsThroughputStatisticsTimerId);
                     TMR_StopTimer(mQppsTxTimerId);
                     //debug
                     TMR_StopTimer(mQppsTxTimerId2);
@@ -695,6 +703,7 @@ static void AdvertisingTimerCallback(void * pParam)
 * \param[in]    pParam        Callback parameters.
 ********************************************************************************** */
 
+
 //debug-> put notify data
 static void QppsTxTimerCallback(void * pParam)
 {
@@ -704,30 +713,26 @@ static void QppsTxTimerCallback(void * pParam)
 
 
       uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
+
 
       //uint8_t tx_data2;
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
+
+
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 1;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  //tx_data[i] = 1;
+    	  tx_data[i] = adcbuffer[i-8];//package1
 
       }
 
@@ -766,31 +771,25 @@ static void QppsTxTimerCallback2(void * pParam)
      uint8_t length = mQppsTestDataLength ;
 
 
-      uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
+      uint8_t tx_data[length];//package2
 
-      //uint8_t tx_data2;
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
     	  tx_data[i] = 2;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+
+    	  tx_data[i] = adcbuffer[i+length-16];//package2
+
 
       }
 
@@ -814,31 +813,27 @@ static void QppsTxTimerCallback3(void * pParam)
      uint8_t length = mQppsTestDataLength ;
 
 
-      uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
+      uint8_t tx_data[length];//package3
+
 
       //uint8_t tx_data2;
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
+
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 3;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  // tx_data[i] = 3;
+
+		  tx_data[i] = adcbuffer[i+(2*length)-24];//package3
 
       }
 
@@ -862,31 +857,27 @@ static void QppsTxTimerCallback4(void * pParam)
      uint8_t length = mQppsTestDataLength ;
 
 
-      uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
+      uint8_t tx_data[length];//package4
+
 
       //uint8_t tx_data2;
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
+
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 4;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  //tx_data[i] = 4;
+
+		   tx_data[i] = adcbuffer[i+3*(length-8)];//package4
 
       }
 
@@ -910,31 +901,26 @@ static void QppsTxTimerCallback5(void * pParam)
      uint8_t length = mQppsTestDataLength ;
 
 
-      uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
+      uint8_t tx_data[length];//package5
+
 
       //uint8_t tx_data2;
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
+
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 5;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  //tx_data[i] = 5;
+		  tx_data[i] = adcbuffer[i+4*(length-8)];//package3
 
       }
 
@@ -955,36 +941,39 @@ static void QppsTxTimerCallback6(void * pParam)
 {
      static uint8_t index = 0;
      uint8_t i;
-     uint8_t length = mQppsTestDataLength ;
+     //length=512-5*(100-8)=52
+     uint8_t length = 52 ;
+     uint8_t totallength;
 
 
-      uint8_t tx_data[length];//package1
-      //uint8_t tx_datat2[length];//package2
-      //uint8_t tx_datat3[length];//package3
-
-      //uint8_t tx_data2;
+      uint8_t tx_data[length];//package6
 
       bleResult_t result;
 
-      //uint8_t * adc_data;
-      //adc_data = adc_conv();
+
 
      for(i = 0; i<8; i++)
       {
     	  tx_data[i]=0;
-    	  //tx_datat2[i]=0;
-		  //tx_datat3[i]=0;
+
       }
 
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 6;
-    	  //tx_data[i] = adc_data[i-8];//package1
-    	  //tx_datat2[i] = adc_data[i+length-16];//package2
-		  //tx_datat3[i] = adc_data[i+(2*length)-24];//package3
+    	  //tx_data[i] = 6;
+		   tx_data[i] = adcbuffer[i+5*(100-8)];//package6
 
       }
+      //add G-sensor
+     // totallength=length + 30;
+     // for(i = length; i<totallength; i++)
+      //{
+         	//tx_data[i] = 6;
+
+     	//	tx_data[i] = gsensorbuffer[i-length];//package6
+
+     //  }
 
 
       for (i = 0; i < gAppMaxConnections_c; i++)
