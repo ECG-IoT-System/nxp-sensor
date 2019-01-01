@@ -45,7 +45,7 @@
 #define DEMO_ADC_CHANNEL 0                          /* Select channel */
 #define DEMO_ADC_CFG_IDX 0                          /* Select configuration */
 #define DEMO_ADC_TRIGGER kADC_TriggerSelectSoftware /* Software trigger */
-#define ADC_BURST_EXAMPLE_NUMBER 512
+#define ADC_BURST_EXAMPLE_NUMBER 276                 /*256
 
 /*******************************************************************************
  * Variables

@@ -88,9 +88,11 @@
 ************************************************************************************/
 #define mBatteryLevelReportInterval_c                (10)         /* battery level report interval in seconds  */
 #define mQppsThroughputStatisticsInterval_c          (10000)       /* Throughput Statistics interval in miliseconds  */
-#define mQppsTxInterval_c                            (166)         /* Qpps send data interval in miliseconds  */
+#define mQppsTxInterval_c                            (1000)         /* Qpps send data interval in miliseconds  */
+#define adcInterval_c                                (1000) //adc intervel
 #define mQppsTestDataLength                          (100)/* the length of data that Qpps send every time*/
 #define gsensorDataLength                            (30)
+#define ringbufLength                                (2208) //(552)*4=2208
 //debug1 20->120 2018.12.3 11:56PM
 /************************************************************************************
 *************************************************************************************
@@ -153,6 +155,7 @@ static tmrTimerID_t mAdvTimerId;
 static tmrTimerID_t mBatteryMeasurementTimerId;
 static tmrTimerID_t mQppsThroughputStatisticsTimerId;
 static tmrTimerID_t mQppsTxTimerId;
+static tmrTimerID_t adcTimerId;
 //debug
 static tmrTimerID_t mQppsTxTimerId2;
 static tmrTimerID_t mQppsTxTimerId3;
@@ -161,8 +164,12 @@ static tmrTimerID_t mQppsTxTimerId5;
 static tmrTimerID_t mQppsTxTimerId6;
 static appPeerInfo_t mPeerInformation[gAppMaxConnections_c];
 
+//debug ->buffer
 static uint8_t *adcbuffer;
 static uint8_t *gsensorbuffer;
+static uint8_t buf_headeridx =0;
+static uint8_t buf_tailidx =0;
+static uint8_t adcringbuf[ringbufLength];
 
 static uint8_t printBuffer[100];
 
@@ -190,6 +197,7 @@ static void QppsTxTimerCallback3(void* pParam);
 static void QppsTxTimerCallback4(void* pParam);
 static void QppsTxTimerCallback5(void* pParam);
 static void QppsTxTimerCallback6(void* pParam);
+static void ADCCallback(void* pParam);
 //static void readdataTimerCallback (void *);//debug 2018.12.7 5:29PM declare readdata function
 
 static void BleApp_Advertise(void);
@@ -353,6 +361,7 @@ static void BleApp_Config()
     mAdvTimerId = TMR_AllocateTimer();
     //mBatteryMeasurementTimerId = TMR_AllocateTimer();
     //mQppsThroughputStatisticsTimerId = TMR_AllocateTimer();
+    //adcTimerId =  TMR_AllocateTimer();
     mQppsTxTimerId =  TMR_AllocateTimer();
     //debug
     mQppsTxTimerId2 =  TMR_AllocateTimer();
@@ -484,7 +493,7 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
             TMR_StopTimer(mAdvTimerId);
           
             /* Start battery measurements */
-            adcbuffer = adc_conv();//debug get adc
+
             //if(!TMR_IsTimerActive(mBatteryMeasurementTimerId))
             //{
               //  TMR_StartLowPowerTimer(mBatteryMeasurementTimerId, gTmrLowPowerIntervalMillisTimer_c,
@@ -495,12 +504,21 @@ static void BleApp_ConnectionCallback (deviceId_t peerDeviceId, gapConnectionEve
               //  TMR_StartLowPowerTimer(mQppsThroughputStatisticsTimerId, gTmrLowPowerIntervalMillisTimer_c,
                 //           mQppsThroughputStatisticsInterval_c, QppsThoughputStatisticsTimerCallback, NULL);
            // }
+           // if(!TMR_IsTimerActive(adcTxTimerId))
+             //               {
+             //  TMR_StartLowPowerTimer(adcTxTimerId, gTmrLowPowerIntervalMillisTimer_c,
+               //                                   mQppsTxInterval_c, adc, NULL);
+                 //            }
+
+            /*if(!TMR_IsTimerActive(adcTimerId))
+                       {
+           		TMR_StartLowPowerTimer(adcTimerId, gTmrLowPowerIntervalMillisTimer_c,
+           				adcInterval_c, ADCCallback, NULL);
+                       }*/
             if(!TMR_IsTimerActive(mQppsTxTimerId))
             {
 		TMR_StartLowPowerTimer(mQppsTxTimerId, gTmrLowPowerIntervalMillisTimer_c,
                            mQppsTxInterval_c, QppsTxTimerCallback, NULL);   
-
-
             }
             //debug add value in notify
             if(!TMR_IsTimerActive(mQppsTxTimerId2))
@@ -702,8 +720,30 @@ static void AdvertisingTimerCallback(void * pParam)
 *
 * \param[in]    pParam        Callback parameters.
 ********************************************************************************** */
+//debug ->adc call back
+/*static void ADCCallback(void * pParm)
+{
+	uint8_t i;
+	uint8_t payload = 552;
 
+	adcbuffer = adc_conv();//debug get adc
+	if(buf_tailidx < ringbufLength){
+	 for(i = buf_tailidx; i<buf_tailidx + payload ; i++){
+	 adcringbuf[i] = adcbuffer[i];
 
+	 }
+	}
+	else{
+		buf_tailidx = 0;
+		for(i = buf_tailidx; i<buf_tailidx + payload ; i++){
+			 adcringbuf[i] = adcbuffer[i];
+
+			 }
+	}
+	buf_tailidx += payload;
+	 //bufheaderidx
+}
+*/
 //debug-> put notify data
 static void QppsTxTimerCallback(void * pParam)
 {
@@ -786,7 +826,7 @@ static void QppsTxTimerCallback2(void * pParam)
 
       for(i = 8; i<length; i++)
       {
-    	  tx_data[i] = 2;
+    	  //tx_data[i] = 2;
 
     	  tx_data[i] = adcbuffer[i+length-16];//package2
 
@@ -831,7 +871,7 @@ static void QppsTxTimerCallback3(void * pParam)
 
       for(i = 8; i<length; i++)
       {
-    	  // tx_data[i] = 3;
+    	   //tx_data[i] = 3;
 
 		  tx_data[i] = adcbuffer[i+(2*length)-24];//package3
 
@@ -941,8 +981,9 @@ static void QppsTxTimerCallback6(void * pParam)
 {
      static uint8_t index = 0;
      uint8_t i;
+     uint8_t length = mQppsTestDataLength ;
      //length=512-5*(100-8)=52
-     uint8_t length = 52 ;
+    // uint8_t length = 52 ;
      uint8_t totallength;
 
 
@@ -962,7 +1003,8 @@ static void QppsTxTimerCallback6(void * pParam)
       for(i = 8; i<length; i++)
       {
     	  //tx_data[i] = 6;
-		   tx_data[i] = adcbuffer[i+5*(100-8)];//package6
+    	  tx_data[i] = adcbuffer[i+5*(length-8)];
+		  // tx_data[i] = adcbuffer[i+5*(100-8)];//package6
 
       }
       //add G-sensor
